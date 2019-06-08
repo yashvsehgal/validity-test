@@ -1,0 +1,139 @@
+<html>
+
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/bootstrap-table@1.14.2/dist/bootstrap-table.min.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+
+<body>
+
+  <div class="container">
+    <h2>Duplicate records finder</h2>
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <form id="upload-file-form">
+          <label for="upload-file-input">SELECT CSV FILE</label>
+          <input id="upload-file-input" type="file" name="file" accept="*" />
+          <button id="parseBtn" type="button" class="btn btn-info">Check Duplicate Records</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h2>Possible Duplicate Records</h2>
+      </div>
+      <div class="panel-body">
+        <table id="table-for-duplicate-records" class="table"></table>
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h2>Unique Records</h2>
+      </div>
+      <div class="panel-body">
+        <table id="table-for-unique-records" class="table"></table>
+      </div>
+    </div>
+
+  </div>
+
+
+</body>
+<script>
+  const COLUMNS = [{
+      field: 'firstName',
+      title: 'First Name'
+    }, {
+      field: 'lastName',
+      title: 'Last Name'
+    }, {
+      field: 'company',
+      title: 'Company'
+    },
+    {
+      field: 'email',
+      title: 'Email'
+    }, {
+      field: 'city',
+      title: 'City'
+    }, {
+      field: 'address1',
+      title: 'Address1'
+    }, {
+      field: 'address2',
+      title: 'Address2'
+    },
+    {
+      field: 'zip',
+      title: 'Zip'
+    },
+    {
+      field: 'state',
+      title: 'State'
+    }, {
+      field: 'stateAbbrevation',
+      title: 'State Abbrevated'
+    }, {
+      field: 'phone',
+      title: 'Phone'
+    }
+  ];
+  const API_BASE = "http://localhost:5001/api/v1/";
+  const PARSE_CSV_ENDPOINT = "parse/csv";
+
+  $(document).ready(function() {
+    $("#parseBtn").on("click", uploadFile);
+    renderTableForDuplicateRecords();
+    renderTableForUniqueRecords();
+  });
+
+  function uploadFile() {
+    $.ajax({
+      url: API_BASE + PARSE_CSV_ENDPOINT,
+      type: "POST",
+      data: new FormData($("#upload-file-form")[0]),
+      enctype: 'multipart/form-data',
+      processData: false,
+      contentType: false,
+      crossDomain: true,
+      cache: false,
+      success: function(response) {
+        let duplicateRecords = [];
+        response.duplicateRecordsGroupList.forEach(list => {
+          list.forEach(item => {
+            duplicateRecords.push(item)
+          })
+        });
+        renderTableForDuplicateRecords(duplicateRecords);
+        renderTableForUniqueRecords(response.uniqueRecordsList);
+      },
+      error: function(error) {
+        console.log("Something went wrong, could not parse csv file." + JSON.stringify(error));
+      }
+    });
+  }
+
+  function renderTableForDuplicateRecords(data) {
+    $('#table-for-duplicate-records').bootstrapTable('destroy');
+    $('#table-for-duplicate-records').bootstrapTable({
+      columns: COLUMNS,
+      data: data,
+
+    });
+    $('#table-for-duplicate-records').bootstrapTable('hideLoading')
+  }
+
+  function renderTableForUniqueRecords(data) {
+    $('#table-for-unique-records').bootstrapTable('destroy');
+    $('#table-for-unique-records').bootstrapTable({
+      columns: COLUMNS,
+      data: data,
+    });
+    $('#table-for-unique-records').bootstrapTable('hideLoading');
+  }
+</script>
+
+</html>
