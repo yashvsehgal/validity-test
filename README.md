@@ -2,6 +2,9 @@
 
 The application finds possible duplicate values in a given csv file using LevenshteinDistance (https://en.wikipedia.org/wiki/Levenshtein_distance)
 
+#### Live Application
+https://duplicatechecker.herokuapp.com/
+
 #### How to run application
 1. Clone the repo
 
